@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Career Path Finder</title>
+  <style>
+    :root {
+      --primary: #4361ee;
+      --primary-light: #4895ef;
+      --secondary: #3f37c9;
+      --dark: #1d3557;
+      --light: #f8f9fa;
+      --success: #4cc9f0;
+      --warning: #f72585;
+      --gray: #adb5bd;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: var(--dark);
+    }
+    
+    .container {
+      background-color: white;
+      border-radius: 20px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 800px;
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 8px;
+      background: linear-gradient(to right, var(--primary), var(--success));
+    }
+    
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: var(--dark);
+      font-size: 2.5rem;
+      position: relative;
+      padding-bottom: 15px;
+    }
+    
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 4px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+    
+    .intro-text {
+      text-align: center;
+      margin-bottom: 30px;
+      color: var(--dark);
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+    
+    .progress-container {
+      margin-bottom: 30px;
+    }
+    
+    .progress-bar {
+      height: 10px;
+      background-color: #e9ecef;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    
+    .progress {
+      height: 100%;
+      background: linear-gradient(to right, var(--primary), var(--success));
+      width: 6.66%;
+      transition: width 0.5s ease;
+    }
+    
+    .progress-text {
+      text-align: right;
+      font-size: 0.9rem;
+      color: var(--gray);
+    }
+    
+    .question-container {
+      display: none;
+    }
+    
+    .question-container.active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .question {
+      margin-bottom: 25px;
+      padding: 20px;
+      border-radius: 12px;
+      background-color: #f8f9fa;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .question-number {
+      font-size: 0.9rem;
+      color: var(--primary);
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    
+    .question p {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+    
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .option {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      background-color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 2px solid #e9ecef;
+    }
+    
+    .option:hover {
+      background-color: #f1f3f5;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    .option.selected {
+      border-color: var(--primary);
+      background-color: rgba(67, 97, 238, 0.05);
+    }
+    
+    .option input {
+      margin-right: 12px;
+      transform: scale(1.2);
+    }
+    
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+    }
+    
+    button {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    #prevBtn {
+      background-color: white;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+    }
+    
+    #prevBtn:hover:not(:disabled) {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    #prevBtn:disabled {
+      color: var(--gray);
+      border-color: var(--gray);
+      cursor: not-allowed;
+    }
+    
+    #nextBtn, #submitBtn {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    #nextBtn:hover, #submitBtn:hover {
+      background-color: var(--secondary);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+    }
+    
+    #submitBtn {
+      display: none;
+    }
+    
+    .quiz-complete {
+      text-align: center;
+      padding: 40px 20px;
+      display: none;
+    }
+    
+    .quiz-complete h2 {
+      color: var(--dark);
+      margin-bottom: 15px;
+    }
+    
+    .quiz-complete p {
+      margin-bottom: 25px;
+      font-size: 1.1rem;
+    }
+    
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .spinner {
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid var(--primary);
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 25px 20px;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .question p {
+        font-size: 1.1rem;
+      }
+      
+      .buttons {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Career Path Finder</h1>
+    <p class="intro-text">Discover your ideal career by answering these 15 questions. Be honest with your responses for the most accurate results!</p>
+    
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+      </div>
+      <div class="progress-text"><span id="current-question">1</span> of 15</div>
+    </div>
+    
+    <form id="quizForm">
+      <!-- Question 1 -->
+      <div class="question-container active" id="q1">
+        <div class="question">
+          <div class="question-number">Question 1 of 15</div>
+          <p>What do you enjoy most?</p>
+          <div class="options">
+            <label class="option">
+              <input type="radio" name="q1" value="Solving problems"> Solving problems
+            </label>
+            <label class="option">
+              <input type="radio" name="q1" value="Helping people"> Helping people
+            </label>
+            <label class="option">
+              <input type="radio" name="q1" value="Designing things"> Designing things
+            </label>
+            <label class="option">
+              <input type="radio" name="q1" value="Analyzing data"> Analyzing data
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Question 2 -->
+      <div class="question-container" id="q2">
+        <div class="question">
+          <div class="question-number">Question 2 of 15</div>
+          <p>What's your preferred work style?</p>
+          <div class="options">
+            <label class="option">
+              <input type="radio" name="q2" value="Independent"> Independent
+            </label>
+            <label class="option">
+              <input type="radio" name="q2" value="Team-based"> Team-based
+            </label>
+            <label class="option">
+              <input type="radio" name="q2" value="Flexible"> Flexible
+            </label>
+            <label class="option">
+              <input type="radio" name="q2" value="Structured"> Structured
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Additional questions (3-15) would go here -->
+      <!-- Question 3 -->
+      <div class="question-container" id="q3">
+        <div class="question">
+          <div class="question-number">Question 3 of 15</div>
+          <p>Which environment do you prefer?</p>
+          <div class="options">
+            <label class="option">
+              <input type="radio" name="q3" value="Office"> Office
+            </label>
+            <label class="option">
+              <input type="radio" name="q3" value="Remote"> Remote
+            </label>
+            <label class="option">
+              <input type="radio" name="q3" value="Outdoors"> Outdoors
+            </label>
+            <label class="option">
+              <input type="radio" name="q3" value="Mixed"> Mixed
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Question 4 -->
+      <div class="question-container" id="q4">
+        <div class="question">
+          <div class="question-number">Question 4 of 15</div>
+          <p>How do you handle challenges?</p>
+          <div class="options">
+            <label class="option">
+              <input type="radio" name="q4" value="Research"> Research and analyze
+            </label>
+            <label class="option">
+              <input type="radio" name="q4" value="Creative"> Creative solutions
+            </label>
+            <label class="option">
+              <input type="radio" name="q4" value="Collaborate"> Collaborate with others
+            </label>
+            <label class="option">
+              <input type="radio" name="q4" value="Systematic"> Follow systematic approaches
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Question 5 -->
+      <div class="question-container" id="q5">
+        <div class="question">
+          <div class="question-number">Question 5 of 15</div>
+          <p>What motivates you most?</p>
+          <div class="options">
+            <label class="option">
+              <input type="radio" name="q5" value="Achievement"> Achievement and success
+            </label>
+            <label class="option">
+              <input type="radio" name="q5" value="Helping"> Helping others
+            </label>
+            <label class="option">
+              <input type="radio" name="q5" value="Learning"> Learning new things
+            </label>
+            <label class="option">
+              <input type="radio" name="q5" value="Security"> Job security
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Question 6 -->
+<div class="question-container" id="q6">
+  <div class="question">
+    <div class="question-number">Question 6 of 15</div>
+    <p>Which of these activities appeals to you most?</p>
+    <div class="options">
+      <label class="option">
+        <input type="radio" name="q6" value="Organizing"> Organizing information
+      </label>
+      <label class="option">
+        <input type="radio" name="q6" value="Creating"> Creating something new
+      </label>
+      <label class="option">
+        <input type="radio" name="q6" value="Teaching"> Teaching or explaining
+      </label>
+      <label class="option">
+        <input type="radio" name="q6" value="Leading"> Leading a team
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- Question 7 -->
+<div class="question-container" id="q7">
+  <div class="question">
+    <div class="question-number">Question 7 of 15</div>
+    <p>How do you prefer to communicate?</p>
+    <div class="options">
+      <label class="option">
+        <input type="radio" name="q7" value="Written"> Written communication
+      </label>
+      <label class="option">
+        <input type="radio" name="q7" value="Verbal"> Verbal communication
+      </label>
+      <label class="option">
+        <input type="radio" name="q7" value="Visual"> Visual presentations
+      </label>
+      <label class="option">
+        <input type="radio" name="q7" value="Mixed"> A mix of all
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- Question 8 -->
+<div class="question-container" id="q8">
+  <div class="question">
+    <div class="question-number">Question 8 of 15</div>
+    <p>What type of problems interest you?</p>
+    <div class="options">
+      <label class="option">
+        <input type="radio" name="q8" value="Technical"> Technical problems
+      </label>
+      <label class="option">
+        <input type="radio" name="q8" value="Human"> Human behavior problems
+      </label>
+      <label class="option">
+        <input type="radio" name="q8" value="Creative"> Creative challenges
+      </label>
+      <label class="option">
+        <input type="radio" name="q8" value="Strategic"> Strategic planning
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- Question 9 -->
+<div class="question-container" id="q9">
+  <div class="question">
+    <div class="question-number">Question 9 of 15</div>
+    <p>How important is work-life balance to you?</p>
+    <div class="options">
+      <label class="option">
+        <input type="radio" name="q9" value="Essential"> Essential - my top priority
+      </label>
+      <label class="option">
+        <input type="radio" name="q9" value="Important"> Important but flexible
+      </label>
+      <label class="option">
+        <input type="radio" name="q9" value="Secondary"> Secondary to career growth
+      </label>
+      <label class="option">
+        <input type="radio" name="q9" value="Depends"> Depends on the job
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- Question 10 -->
+<div class="question-container" id="q10">
+  <div class="question">
+    <div class="question-number">Question 10 of 15</div>
+    <p>Which skills do you consider your strongest?</p>
+    <div class="options">
+      <label class="option">
+        <input type="radio" name="q10" value="Analytical"> Analytical thinking
+      </label>
+      <label class="option">
+        <input type="radio" name="q10" value="Creative"> Creative thinking
+      </label>
+      <label class="option">
+        <input type="radio" name="q10" value="Interpersonal"> Interpersonal skills
+      </label>
+      <label class="option">
+        <input type="radio" name="q10" value="Technical"> Technical skills
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- Question 11 -->
+<div class="question-container" id="q11">
+  <div class="question">
+    <div class="question-number">Question 11 of 15</div>
+    <p>What kind of impact do you want to make?</p>
+    <div class="options">
+      <label class="option">
+        <input type="radio" name="q11" value="Innovation"> Technological innovation
+      </label>
+      <label class="option">
+        <input type="radio" name="q11" value="Social"> Social impact
+      </label>
+      <label class="option">
+        <input type="radio" name="q11" value="Business"> Business success
+      </label>
+      <label class="option">
+        <input type="radio" name="q11" value="Personal"> Personal fulfillment
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- Question 12 -->
+<div class="question-container" id="q12">
+  <div class="question">
+    <div class="question-number">Question 12 of 15</div>
+    <p>How do you handle pressure?</p>
+    <div class="options">
+      <label class="option">
+        <input type="radio" name="q12" value="Calm"> Stay calm and focused
+      </label>
+      <label class="option">
+        <input type="radio" name="q12" value="Plan"> Create a plan
+      </label>
+      <label class="option">
+        <input type="radio" name="q12" value="Collaborate"> Seek help from others
+      </label>
+      <label class="option">
+        <input type="radio" name="q12" value="Adapt"> Adapt quickly
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- Question 13 -->
+<div class="question-container" id="q13">
+  <div class="question">
+    <div class="question-number">Question 13 of 15</div>
+    <p>What's your approach to learning new things?</p>
+    <div class="options">
+      <label class="option">
+        <input type="radio" name="q13" value="Systematic"> Systematic and structured
+      </label>
+      <label class="option">
+        <input type="radio" name="q13" value="Hands-on"> Hands-on experience
+      </label>
+      <label class="option">
+        <input type="radio" name="q13" value="Collaborative"> Learning with others
+      </label>
+      <label class="option">
+        <input type="radio" name="q13" value="Exploratory"> Exploratory and curious
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- Question 14 -->
+<div class="question-container" id="q14">
+  <div class="question">
+    <div class="question-number">Question 14 of 15</div>
+    <p>Which of these describes your ideal workplace?</p>
+    <div class="options">
+      <label class="option">
+        <input type="radio" name="q14" value="Fast-paced"> Fast-paced and dynamic
+      </label>
+      <label class="option">
+        <input type="radio" name="q14" value="Stable"> Stable and predictable
+      </label>
+      <label class="option">
+        <input type="radio" name="q14" value="Creative"> Creative and innovative
+      </label>
+      <label class="option">
+        <input type="radio" name="q14" value="Supportive"> Supportive and collaborative
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- Question 15 -->
+<div class="question-container" id="q15">
+  <div class="question">
+    <div class="question-number">Question 15 of 15</div>
+    <p>What career achievement would make you most proud?</p>
+    <div class="options">
+      <label class="option">
+        <input type="radio" name="q15" value="Innovation"> Creating something innovative
+      </label>
+      <label class="option">
+        <input type="radio" name="q15" value="Leadership"> Leading a successful team
+      </label>
+      <label class="option">
+        <input type="radio" name="q15" value="Impact"> Making a positive impact
+      </label>
+      <label class="option">
+        <input type="radio" name="q15" value="Expertise"> Becoming an expert in your field
+      </label>
+    </div>
+  </div>
+</div>
+      
+      <div class="buttons">
+        <button type="button" id="prevBtn" disabled>Previous</button>
+        <button type="button" id="nextBtn">Next</button>
+        <button type="submit" id="submitBtn" style="display: none;">Submit</button>
+      </div>
+    </form>
+    
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Analyzing your responses...</p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const totalQuestions = 15; // In a full implementation, this would be 15
+      let currentQuestion = 1;
+      
+      const progressBar = document.getElementById('progress');
+      const currentQuestionSpan = document.getElementById('current-question');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const submitBtn = document.getElementById('submitBtn');
+      const loadingDiv = document.getElementById('loading');
+      const quizForm = document.getElementById('quizForm');
+      
+      // Update progress bar
+      function updateProgress() {
+        const progress = (currentQuestion / totalQuestions) * 100;
+        progressBar.style.width = `${progress}%`;
+        currentQuestionSpan.textContent = currentQuestion;
+      }
+      
+      // Show current question
+      function showQuestion(num) {
+        document.querySelectorAll('.question-container').forEach(container => {
+          container.classList.remove('active');
+        });
+        document.getElementById(`q${num}`).classList.add('active');
+        
+        // Update button states
+        prevBtn.disabled = num === 1;
+        nextBtn.style.display = num === totalQuestions ? 'none' : 'block';
+        submitBtn.style.display = num === totalQuestions ? 'block' : 'none';
+      }
+      
+      // Next button click
+      nextBtn.addEventListener('click', function() {
+        if (currentQuestion < totalQuestions) {
+          currentQuestion++;
+          updateProgress();
+          showQuestion(currentQuestion);
+        }
+      });
+      
+      // Previous button click
+      prevBtn.addEventListener('click', function() {
+        if (currentQuestion > 1) {
+          currentQuestion--;
+          updateProgress();
+          showQuestion(currentQuestion);
+        }
+      });
+      
+      // Form submission
+      quizForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Show loading animation
+        document.querySelector('.progress-container').style.display = 'none';
+        document.querySelectorAll('.question-container').forEach(el => {
+          el.style.display = 'none';
+        });
+        document.querySelector('.buttons').style.display = 'none';
+        loadingDiv.style.display = 'block';
+        
+        // Collect form data
+        const formData = new FormData(quizForm);
+        const answers = {};
+        for (const [key, value] of formData.entries()) {
+          answers[key] = value;
+        }
+        
+        // Simulate API call delay
+        setTimeout(async () => {
+          try {
+            const res = await fetch('/submit', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ answers })
+            });
+            
+            const data = await res.json();
+            window.location.href = `/result?career=${encodeURIComponent(data.career)}`;
+          } catch (error) {
+            console.error('Error submitting quiz:', error);
+            alert('There was an error submitting your quiz. Please try again.');
+            location.reload();
+          }
+        }, 1500);
+      });
+      
+      // Add interactivity to options
+      document.querySelectorAll('.option').forEach(option => {
+        option.addEventListener('click', function() {
+          const radio = this.querySelector('input[type="radio"]');
+          radio.checked = true;
+          
+          // Update visual selection
+          this.parentNode.querySelectorAll('.option').forEach(opt => {
+            opt.classList.remove('selected');
+          });
+          this.classList.add('selected');
+        });
+      });
+      
+      // Initialize
+      updateProgress();
+      showQuestion(currentQuestion);
+    });
+    
+  </script>
+</body>
+</html>
